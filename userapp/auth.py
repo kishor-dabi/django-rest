@@ -1,14 +1,16 @@
-import jwt
+import rest_framework_jwt
 
 from django.conf import settings
 
 from rest_framework import authentication, exceptions
 
-from django.contrib.auth.models import User
+from .models import User
+from rest_framework_jwt.settings import api_settings
+jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
-    authentication_header_prefix = 'Token'
+    authentication_header_prefix = 'Bearer'
 
     def authenticate(self, request):
         print('auth--------------------------')
@@ -39,6 +41,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         # that we should authenticate against.
         auth_header = authentication.get_authorization_header(request).split()
         auth_header_prefix = self.authentication_header_prefix.lower()
+        print('auth::', auth_header)
 
         if not auth_header:
             return None
@@ -69,6 +72,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         # By now, we are sure there is a *chance* that authentication will
         # succeed. We delegate the actual credentials authentication to the
         # method below.
+        # return jwt.decode(token, settings.SECRET_KEY,settings.)
         return self._authenticate_credentials(request, token)
 
     def _authenticate_credentials(self, request, token):
@@ -76,20 +80,24 @@ class JWTAuthentication(authentication.BaseAuthentication):
         Try to authenticate the given credentials. If authentication is
         successful, return the user and token. If not, throw an error.
         """
+        # token = authentication.get_authorization_header(request).split()
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY)
+            # payload = rest_framework_jwt.decode(token, settings.JWT_AUTH.JWT_SECRET_KEY,)
+            print(jwt_decode_handler(token))
+            payload = jwt_decode_handler(token)
         except:
             msg = 'Invalid authentication. Could not decode token.'
             raise exceptions.AuthenticationFailed(msg)
+        # return  payload
 
-        try:
-            user = User.objects.get(pk=payload['id'])
-        except User.DoesNotExist:
-            msg = 'No user matching this token was found.'
-            raise exceptions.AuthenticationFailed(msg)
-
-        if not user.is_active:
-            msg = 'This user has been deactivated.'
-            raise exceptions.AuthenticationFailed(msg)
-
-        return (user, token)
+        # try:
+        #     user = User.objects.get(pk=payload['id'])
+        # except User.DoesNotExist:
+        #     msg = 'No user matching this token was found.'
+        #     raise exceptions.AuthenticationFailed(msg)
+        #
+        # if not user.is_active:
+        #     msg = 'This user has been deactivated.'
+        #     raise exceptions.AuthenticationFailed(msg)
+        #
+        return (payload, token)

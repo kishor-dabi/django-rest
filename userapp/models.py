@@ -4,7 +4,7 @@ from django.db import models
 import uuid
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
-
+from django_rest.userrole.models import UserRole
 
 class UserManager(BaseUserManager):
 
@@ -72,6 +72,7 @@ class UserProfile(models.Model):
     last_name = models.CharField(max_length=50, unique=False)
     phone_number = models.CharField(max_length=10, unique=True, null=False, blank=False)
     age = models.PositiveIntegerField(null=False, blank=False)
+    role = models.OneToOneField(UserRole, on_delete=models.CASCADE, null=True, related_name='role')
     GENDER_CHOICES = (
         ('M', 'Male'),
         ('F', 'Female'),

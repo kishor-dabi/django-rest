@@ -39,7 +39,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
@@ -66,7 +66,7 @@ class User(AbstractBaseUser):
 
 class UserProfile(models.Model):
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    # id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     first_name = models.CharField(max_length=50, unique=False)
     last_name = models.CharField(max_length=50, unique=False)

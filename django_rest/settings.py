@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'userapp',
+    'post',
     'django_rest.userrole',
     'rest_framework',
     'django.contrib.admin',

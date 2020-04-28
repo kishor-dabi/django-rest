@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView, UpdateAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from userapp.serializers import UserRegistrationSerializer, UserLoginSerializer
+from userapp.serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileUpdateSerializer
 from rest_framework.generics import RetrieveAPIView
 
 from rest_framework.generics import RetrieveAPIView
@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from userapp.models import UserProfile
 from .auth import JWTAuthentication
-
+from post.serializers import UserAddressSerializer
 
 class UserRegistrationView(CreateAPIView):
     serializer_class = UserRegistrationSerializer
@@ -55,7 +55,7 @@ class UserLoginView(RetrieveAPIView):
         return Response(response, status=status_code)
 
 class UserProfileView(RetrieveUpdateAPIView):
-
+    queryset = UserProfile.objects.all()
     permission_classes = (IsAuthenticated,)
     authentication_class = JSONWebTokenAuthentication
     jWTAuthentication = JWTAuthentication()
@@ -66,10 +66,14 @@ class UserProfileView(RetrieveUpdateAPIView):
             # print(ur, ur.is_valid())
             user_profile = UserProfile.objects.get(user=request.user)
             status_code = status.HTTP_200_OK
-            print(user_profile.role, '{===========================', user_profile.role.id)
-            roledata = UserRole.objects.get(pk=user_profile.role.id)
-            serializer = UserRoleSerializer(roledata)
-            print(serializer,serializer.data )
+            print(user_profile, '{===========================')
+            serializer = None
+            if user_profile.role is not None:
+                roledata = UserRole.objects.get(pk=user_profile.role.id)
+                serializer = UserRoleSerializer(roledata)
+            # print(serializer,serializer.data )
+            # ad = UserAddressSerializer(user_profile.user_location)
+            # print(ad)
             # userroleser = UserRoleSerializer(data=user_profile.role)
             # print(userroleser.is_valid())
             response = {
@@ -82,7 +86,8 @@ class UserProfileView(RetrieveUpdateAPIView):
                     'phone_number': user_profile.phone_number,
                     'age': user_profile.age,
                     'gender': user_profile.gender,
-                    'role': serializer.data
+                    'role': serializer,
+                    # 'profile':user_profile.data
                     }]
                 }
 
@@ -95,23 +100,34 @@ class UserProfileView(RetrieveUpdateAPIView):
                 'error': str(e)
                 }
         return Response(response, status=status_code)
-    def put(self, request):
 
-        print(request.data)
-        user_profile = UserProfile.objects.filter(user=request.user).update(role_id=request.data['role_id'])
+    def get_queryset(self):
+        queryset = UserProfile.objects.all()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
 
-        jwtdata = self.jWTAuthentication.authenticate(request=request)
-        print(jwtdata, '------------------', user_profile)
-        # profile = request.data
-        # profile['user_id'] = jwtdata[0]['user_id']
-        # print(profile)
-        # role = UserRole.objects.get(pk=request.data['role_id'])
-        # rser = UserRoleSerializer(data=role)
-        # print(role, '-----role', rser.is_valid())
-        # user_profile.role = role
-        # uu = UserSerializer(user_profile, data=request.data)
-        # print(uu)
-        # print(uu.is_valid())
+
+class UserProfileUpdate(UpdateAPIView):
+    queryset = UserProfile.objects.all()
+    permission_classes = (IsAuthenticated,)
+    authentication_class = JSONWebTokenAuthentication
+    jWTAuthentication = JWTAuthentication()
+    serializer_class = UserProfileUpdateSerializer
+    def put(self, request, pk, format=None):
+        # pk = request.user
+        if 'id' not in request.data:
+            request.data['id'] = pk
+        print(request.data, "request.data.id")
+        instance = self.get_object()
+        print(instance)
+        serializer = self.serializer_class(instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response("serializer", status=status.HTTP_200_OK)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         response = {
             'success': 'true',
             'status code': status.HTTP_200_OK,
@@ -122,25 +138,6 @@ class UserProfileView(RetrieveUpdateAPIView):
                 # 'phone_number': user_profile.phone_number,
                 # 'age': user_profile.age,
                 # 'gender': user_profile.gender,
-            }]
-        }
-        return Response(response, status=status.HTTP_200_OK)
-
-class UserProfileUpdate(UpdateAPIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_class = JSONWebTokenAuthentication
-    def put(self, request):
-        print(request.data)
-        response = {
-            'success': 'true',
-            'status code': status.HTTP_200_OK,
-            'message': 'User update successfully',
-            'data': [{
-                'first_name': user_profile.first_name,
-                'last_name': user_profile.last_name,
-                'phone_number': user_profile.phone_number,
-                'age': user_profile.age,
-                'gender': user_profile.gender,
             }]
         }
         return Response(response, status=status.HTTP_200_OK)

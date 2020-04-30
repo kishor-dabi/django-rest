@@ -32,7 +32,7 @@ class UserAddressCreateSerializer(serializers.ModelSerializer):
         print(addressLocatio, "---------------------")
 
         for address in UserLocation:
-            print(address, "{{{{{{{{{{{{{{{{{{{{{{",address['id'])
+            print(address, "{{{{{{{{{{{create{{{{{{{{{{{",address['id'])
             uuser = UserProfile.objects.get(pk=address['id'])
             addressLocatio.user_location.add(uuser)
         addressLocatio.save()
@@ -42,13 +42,46 @@ class UserAddressCreateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         UserLocation = validated_data.pop("user_location")
 
-        print(instance,"------------------------", validated_data, )
+        print(instance,"------------------------", validated_data,instance.user_location)
+        instance.user_location.clear()
         instance.location = validated_data.get('location', instance.location)
         for address in UserLocation:
-            print(address, "{{{{{{{{{{{{{{{{{{{{{{",address['id'])
+            print(address, "{{{{{{{{{{{update{{{{{{{{{{{",address['id'])
             uuser = UserProfile.objects.get(pk=address['id'])
             instance.user_location.add(uuser)
         # instance.role_name = validated_data.get('role_name', instance.role_name)
         instance.save()
         print(instance, instance.location)
         return instance
+
+    # def update(self, instance, validated_data):
+    #     UserLocation = validated_data.pop("user_location")
+    #
+    #     print(instance.location,"------------------------", validated_data,instance.user_location )
+    #
+    #
+    #     instance.location = validated_data.get('location', instance.location)
+    #     # Ins = UserAddress.objects.get(pk=instance.id)
+    #     # IDATA = UserAddressSerializer(Ins)
+    #     # print(Ins, IDATA.data)
+    #     keep_ids = []
+    #     # locationdata = IDATA.data
+    #     for address in UserLocation:
+    #         print(address, "{{{{{{{{{{{{{{{{{{{{{{",address['id'])
+    #
+    #         uuser = UserProfile.objects.get(pk=address['id'])
+    #         print(uuser, uuser)
+    #         instance.user_location.add(address)
+    #         # keep_ids.append(uuser.id)
+    #     # instance.role_name = validated_data.get('role_name', instance.role_name)
+    #     print(keep_ids, "keep ids")
+    #     valarr = [val.id for val in instance.user_location.all()]
+    #     print(valarr, "valarr")
+    #     # for loc in instance.user_location.all():
+    #     #     print(loc.id)
+    #     #     if loc.id not in keep_ids:
+    #     #         loc.delete()
+    #
+    #     instance.save()
+    #     print(instance, instance.location)
+    #     return instance

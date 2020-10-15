@@ -33,11 +33,11 @@ class UserDataSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     role = UserRoleSerializer(required=False)
     user = UserDataSerializer(required=False)
-    first_name = serializers.IntegerField(required=False)
-    last_name = serializers.IntegerField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
     phone_number = serializers.IntegerField(required=False)
     age = serializers.IntegerField(required=False)
-    gender = serializers.IntegerField(required=False)
+    gender = serializers.CharField(required=False)
     id = serializers.IntegerField(required=False)
 
     # user_address = UserAddressSerializer(many=True, required=False)
